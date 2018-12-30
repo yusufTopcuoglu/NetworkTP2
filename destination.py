@@ -72,12 +72,12 @@ class ThreadingUDPRequestHandler(socketserver.BaseRequestHandler):
         global sndpkt
         global result
         if has_seq_num(packets_seq_number) and (not is_corrupt(rcvpkt)):
-            print("incoming seq number ", packets_seq_number)
-            print("expected seq number  ", exp_seq_number)
+            print("incoming seq number ", packets_seq_number, ", expected seq number  ", exp_seq_number)
             # has expected seq number and not corrupted
             # Determine packet is finished or not
             if finish_flag:
                 # whole file is finished
+                print("whole packet is received")
                 wr_file = open("output.txt", "wb")
                 # write data to output.txt
                 wr_file.write(result)
@@ -121,12 +121,17 @@ sndpkt = make_pkt()
 exp_seq_number += 1
 result = b''
 
-# udp_r1_address = ("10.10.3.2", 5003)
-udp_from_r1_address = ("127.0.0.1", 5003)
-udp_to_r1_address = ("127.0.0.1", 6001)
-# udp_r2_address = ("10.10.5.2", 5004)
-udp_from_r2_address = ("127.0.0.1", 5004)
-udp_to_r2_address = ("127.0.0.1", 6002)
+# local port and ip address
+# udp_from_r1_address = ("127.0.0.1", 5003)
+# udp_to_r1_address = ("127.0.0.1", 6001)
+# udp_from_r2_address = ("127.0.0.1", 5004)
+# udp_to_r2_address = ("127.0.0.1", 6002)
+
+# remote port and ip addresses
+udp_from_r1_address = ("10.10.3.2", 5001)
+udp_to_r1_address   = ("10.10.2.1", 6001)
+udp_from_r2_address = ("10.10.5.2", 5002)
+udp_to_r2_address   = ("10.10.4.1", 6002)
 
 if __name__ == "__main__":
 

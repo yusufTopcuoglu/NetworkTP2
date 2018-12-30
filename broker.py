@@ -17,11 +17,29 @@ nextseqnum = 1
 base = 1
 wnd_size = 10
 snd_pkt = []
-tcp_internet_address_sour = ("127.0.0.1", 5000)
-udp_internet_address_to_r1 = ("127.0.0.1", 5001)
-udp_internet_address_from_r1 = ("127.0.0.1", 6003)
-udp_internet_address_to_r2 = ("127.0.0.1", 5002)
-udp_internet_address_from_r2 = ("127.0.0.1", 6004)
+sample_rtt = 0
+estimated_rtt = 0
+dev_rtt = 0
+sent_time = 0
+is_acked = True
+received_time = 0
+# initial value of 1 second is recommended [RFC 6298]
+timeout_interval = 1.0
+
+# local ip and port numbers
+# tcp_internet_address_sour    = ("127.0.0.1", 5000)
+# udp_internet_address_to_r1   = ("127.0.0.1", 5001)
+# udp_internet_address_from_r1 = ("127.0.0.1", 6003)
+# udp_internet_address_to_r2   = ("127.0.0.1", 5002)
+# udp_internet_address_from_r2 = ("127.0.0.1", 6004)
+
+# Geni ip and port numbers
+tcp_internet_address_sour    = ("10.10.1.2", 5000)
+udp_internet_address_to_r1   = ("10.10.3.2", 5001)
+udp_internet_address_from_r1 = ("10.10.2.1", 6001)
+udp_internet_address_to_r2   = ("10.10.5.2", 5002)
+udp_internet_address_from_r2 = ("10.10.4.1", 6002)
+
 lock = threading.Lock()
 
 
@@ -33,6 +51,34 @@ class ThreadingUDPServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
     pass
 
 
+def update_estimated_rtt():
+    global estimated_rtt
+    global sample_rtt
+    sample_rtt = received_time - sent_time
+    if base == 1:
+        estimated_rtt = sample_rtt
+        return
+    # recommended alpha is 0.125
+    estimated_rtt = 0.875 * estimated_rtt + 0.125 * sample_rtt
+
+
+def update_dev_rtt():
+    global dev_rtt
+    global sample_rtt
+    global estimated_rtt
+    # The recommended value of β is 0.25
+    dev_rtt = 0.75 * dev_rtt + 0.25 * abs(sample_rtt - estimated_rtt)
+
+
+def update_timeout_interval():
+    global timeout_interval
+    global estimated_rtt
+    global dev_rtt
+    update_estimated_rtt()
+    update_dev_rtt()
+    timeout_interval = estimated_rtt + 4 * dev_rtt
+
+
 def start_timer():
     global timer
     stop_timer()
@@ -42,7 +88,7 @@ def start_timer():
 def stop_timer():
     global timer
     timer.cancel()
-    timer = threading.Timer(3.0, timeout)
+    timer = threading.Timer(timeout_interval, timeout)
 
 
 def timeout():
@@ -79,11 +125,11 @@ def make_pkt(flag, rcvpckt):
     return pck_without_check_sum + struct.pack("32s", get_check_sum(pck_without_check_sum).encode())
 
 
-timer = threading.Timer(0.2, timeout)
+timer = threading.Timer(timeout_interval, timeout)
 
 
 # Listens tcp client(source) and gets the packet
-# Forwards the packet to the udp server
+# Forwards the packet to the destination over r1 and r2
 class ThreadingTCPRequestHandler(socketserver.BaseRequestHandler):
     # Overrides handle method
     def handle(self):
@@ -93,14 +139,16 @@ class ThreadingTCPRequestHandler(socketserver.BaseRequestHandler):
         global wnd_size
         global udp_internet_address_to_r1
         global udp_internet_address_to_r2
+        global sent_time
+        global is_acked
 
         # read the whole packet and prepare snd_pck
-        rcvpckt = self.request.recv(970)
+        rcvpckt = self.request.recv(900)
         # packet structure (seq_number, flag, data, check_sum)
         while rcvpckt:
             snd_pkt.append(make_pkt(0, rcvpckt))
             nextseqnum += 1
-            rcvpckt = self.request.recv(970)
+            rcvpckt = self.request.recv(900)
 
         # append FIN packet to the end
         snd_pkt.append(make_pkt(1, b''))
@@ -116,13 +164,18 @@ class ThreadingTCPRequestHandler(socketserver.BaseRequestHandler):
                 lock.acquire()
                 if nextseqnum > total_packet_count:
                     lock.release()
-                    print("packet finished")
+                    print("whole packet is sent")
                     stop_timer()
                     break
                 if nextseqnum < base + wnd_size:
+                    if is_acked:
+                        is_acked = False
+                        sent_time = time.time()
                     if nextseqnum % 2 == 0:
+                        # sent packet to destination over router 1
                         sock.sendto(snd_pkt[nextseqnum - 1], udp_internet_address_to_r1)
                     else:
+                        # sent packet to destination over router 2
                         sock.sendto(snd_pkt[nextseqnum - 1], udp_internet_address_to_r2)
                     if base == nextseqnum:
                         start_timer()
@@ -143,18 +196,25 @@ class ThreadingUDPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
         global nextseqnum
         global base
+        global is_acked
+        global received_time
+
         packet = self.request[0]
         ack_num, check_sum = struct.unpack("i32s", packet)
+        global lock
+        lock.acquire()
+        is_acked = True
+        received_time = time.time()
+        update_timeout_interval()
         if not is_corrupt(packet):
-            global lock
-            lock.acquire()
             base = ack_num + 1
             print("ack received  base = ", base, "next sequence number = ", nextseqnum)
             if base == nextseqnum:
                 stop_timer()
             else:
                 start_timer()
-            lock.release()
+
+        lock.release()
 
 
 if __name__ == "__main__":
