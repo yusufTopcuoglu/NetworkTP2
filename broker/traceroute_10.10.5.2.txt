@@ -1,0 +1,3 @@
+traceroute to 10.10.5.2 (10.10.5.2), 30 hops max, 60 byte packets
+ 1  r2-link-3 (10.10.4.2)  0.588 ms  0.542 ms  0.508 ms
+ 2  d-link-4 (10.10.5.2)  1.270 ms  1.226 ms  1.194 ms
