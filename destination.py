@@ -22,18 +22,20 @@ def make_pkt():
     return response_packet
 
 
+# returns if packet's sequence number is equal to expected sequence number
 def has_seq_num(packets_seq_number):
     global exp_seq_number
     return packets_seq_number == exp_seq_number
 
 
+# return md5 od the data
 def get_check_sum(data):
     hash_md5 = hashlib.md5()
     hash_md5.update(data)
     return hash_md5.hexdigest()
 
 
-# check sum field is 16 byte and at the end of the file
+# check sum field is 32 byte and at the end of the file
 def is_corrupt(packet):
     length = len(packet)
     check_sum_size = calcsize('32s')
@@ -46,7 +48,6 @@ class ThreadingUDPServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
 
 
 # Listens udp client and gets the packet
-# Forwards packet to the udp client(destination)
 class ThreadingUDPRequestHandler(socketserver.BaseRequestHandler):
     # Overrides handle method
     def handle(self):
@@ -71,7 +72,9 @@ class ThreadingUDPRequestHandler(socketserver.BaseRequestHandler):
         global exp_seq_number
         global sndpkt
         global result
+
         if has_seq_num(packets_seq_number) and (not is_corrupt(rcvpkt)):
+            # not corrupted and has expected sequence number
             print("incoming seq number ", packets_seq_number, ", expected seq number  ", exp_seq_number)
             # has expected seq number and not corrupted
             # Determine packet is finished or not
@@ -105,7 +108,7 @@ class ThreadingUDPRequestHandler(socketserver.BaseRequestHandler):
                     sock.sendto(sndpkt, udp_to_r2_address)
         else:
             # Corrupt or seq number does not match
-            # Send old ACK message
+            # Send the old ACK message
             if packets_seq_number % 2 == 0:
                 sock.sendto(sndpkt, udp_to_r1_address)
             else:

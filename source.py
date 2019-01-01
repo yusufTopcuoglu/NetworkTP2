@@ -3,9 +3,9 @@ import socket
 import sys
 import datetime
 
-# This message will be sent.
 
 file_object = open("input.txt", "rb")
+payload_size = 900
 
 
 # MESSAGE = "Temperature: 37.3 celsius ,Pressure: 10000 bar"
@@ -25,12 +25,12 @@ try:
     # send its message
     print('Sent Time: ' + datetime.datetime.now().strftime("%Y/%m/%d ") + str(datetime.datetime.now().time()))
 
-    MESSAGE = file_object.read(900)
+    MESSAGE = file_object.read(payload_size)
     count = 0
     while MESSAGE:
         count += 1
         sock.send(MESSAGE)
-        MESSAGE = file_object.read(900)
+        MESSAGE = file_object.read(payload_size)
 except Exception as e:
     # prints error and its line number
     print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
