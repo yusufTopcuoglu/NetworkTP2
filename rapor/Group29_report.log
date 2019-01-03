@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2018.10.24)  1 JAN 2019 17:04
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2018.10.24)  3 JAN 2019 22:04
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -744,6 +744,12 @@ LaTeX Warning: Label `tab:example' multiply defined.
 
 LaTeX Warning: Label `tab:example' multiply defined.
 
+
+LaTeX Warning: Label `fig' multiply defined.
+
+
+LaTeX Warning: Label `fig' multiply defined.
+
 )
 \openout1 = `Group29_report.aux'.
 
@@ -859,7 +865,24 @@ Overfull \hbox (26.03833pt too wide) in paragraph at lines 166--186
  [][] 
  []
 
-[2] [3]
+[2] [3] <exp1.png, id=14, 526.96875pt x 395.22656pt>
+File: exp1.png Graphic file (type png)
+ <use exp1.png>
+Package pdftex.def Info: exp1.png used on input line 293.
+(pdftex.def)             Requested size: 263.48372pt x 197.6128pt.
+
+<exp2.png, id=15, 526.96875pt x 395.22656pt>
+File: exp2.png Graphic file (type png)
+ <use exp2.png>
+Package pdftex.def Info: exp2.png used on input line 305.
+(pdftex.def)             Requested size: 263.48372pt x 197.6128pt.
+
+<exp3.png, id=16, 526.96875pt x 395.22656pt>
+File: exp3.png Graphic file (type png)
+ <use exp3.png>
+Package pdftex.def Info: exp3.png used on input line 314.
+(pdftex.def)             Requested size: 263.48372pt x 197.6128pt.
+ [4 <./exp1.png (PNG copy)> <./exp2.png (PNG copy)> <./exp3.png (PNG copy)>]
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -871,7 +894,7 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-[4
+[5
 
 ] (./Group29_report.aux)
 
@@ -879,20 +902,20 @@ LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 4977 strings out of 493029
- 69218 string characters out of 6136233
- 148203 words of memory out of 5000000
- 8422 multiletter control sequences out of 15000+600000
+ 4995 strings out of 493029
+ 69410 string characters out of 6136233
+ 148211 words of memory out of 5000000
+ 8436 multiletter control sequences out of 15000+600000
  44370 words of font info for 104 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  38i,20n,35p,1342b,272s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texliv
 e/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fo
 nts/type1/urw/times/utmri8a.pfb>
-Output written on Group29_report.pdf (4 pages, 47472 bytes).
+Output written on Group29_report.pdf (5 pages, 124063 bytes).
 PDF statistics:
- 26 PDF objects out of 1000 (max. 8388607)
- 17 compressed objects within 1 object stream
+ 32 PDF objects out of 1000 (max. 8388607)
+ 19 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 16 words of extra memory for PDF output out of 10000 (max. 10000000)
 

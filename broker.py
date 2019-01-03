@@ -28,6 +28,7 @@ received_time = 0
 payload_size = 900
 # initial value of 1 second is recommended [RFC 6298]
 timeout_interval = 1.0
+file_transfer_time = 0
 
 # local ip and port numbers
 # tcp_internet_address_sour    = ("127.0.0.1", 5000)
@@ -99,7 +100,9 @@ def stop_timer():
 
 # gets executed at every timeout
 def timeout():
-    start_timer()
+    global time_seq_number
+    global sent_time
+
     print("time out happened")
     # Creates a udp socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -108,12 +111,16 @@ def timeout():
     else:
         # the packets between [base,nextseqnum]
         for i in range(base, nextseqnum):
+            if i == time_seq_number:
+                sent_time = time.time()
             if i % 2 == 0:
                 # send over r1
                 sock.sendto(snd_pkt[i - 1], udp_internet_address_to_r1)
             else:
                 # send over r2
                 sock.sendto(snd_pkt[i - 1], udp_internet_address_to_r2)
+        time.sleep(0.02)
+    start_timer()
 
 
 # check sum field is 32 byte and at the end of the file
@@ -154,9 +161,14 @@ class ThreadingTCPRequestHandler(socketserver.BaseRequestHandler):
         global sent_time
         global is_acked
         global time_seq_number
+        global file_transfer_time
 
         # read the whole packet and prepare snd_pck
         rcvpckt = self.request.recv(payload_size)
+
+        # start time
+        file_transfer_time = time.time()
+
         # packet structure (seq_number, flag, data, check_sum)
         while rcvpckt:
             snd_pkt.append(make_pkt(0, rcvpckt))
@@ -215,6 +227,7 @@ class ThreadingUDPRequestHandler(socketserver.BaseRequestHandler):
         global is_acked
         global received_time
         global time_seq_number
+        global file_transfer_time
 
         # receive the packet
         packet = self.request[0]
@@ -225,7 +238,7 @@ class ThreadingUDPRequestHandler(socketserver.BaseRequestHandler):
 
         if not is_corrupt(packet):
             # not corrupted ack packet is received
-            if time_seq_number == ack_num:
+            if time_seq_number <= ack_num:
                 # the ack of packet that we count time on is received
                 is_acked = True
                 # get ack received time
@@ -240,6 +253,8 @@ class ThreadingUDPRequestHandler(socketserver.BaseRequestHandler):
                 if base > total_packet_count:
                     # here, whole packets are acked
                     print("whole packet is sent")
+                    file_transfer_time = time.time() - file_transfer_time
+                    print(file_transfer_time)
                 stop_timer()
             else:
                 start_timer()

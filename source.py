@@ -3,8 +3,8 @@ import socket
 import sys
 import datetime
 
-
-file_object = open("input.txt", "rb")
+input_path = sys.argv[1]
+file_object = open(input_path, "rb")
 payload_size = 900
 
 

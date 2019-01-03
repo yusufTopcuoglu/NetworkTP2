@@ -283,10 +283,40 @@ Netem provides Network Emulation functionality for testing protocols by emulatin
 \subsection{NTP}
 The Network Time Protocol (NTP) is a networking protocol for clock synchronization between computer systems over packet-switched, variable-latency data networks.
 
-\subsection{Experiment}
+\subsection{Experiments}
+First, we add configurations which are mentioned at OdtuClass before each experiment. In order to obtain the file transfer time,  we measured time when the broker receives the first packet from the source. Then, we measured new time when we receive the acknowledgment of the last packet from the destination. The difference gives us the file transfer time.
 
-First we synchronized all of the virtual machine's clocks. Then we add delays to 4 links between broker and destination. We performed three experiment that is stated in homework text. The results are in the following figure:
 
+\subsection*{Experiment 1}
+
+\begin{figure}[h]
+\centerline{\includegraphics[scale=0.5]{exp1.png}}
+\caption{}
+\label{fig}
+\end{figure}
+
+In the first experiment, we expected that if we increase the percentage of packet loss, file transfer time also will increase because packets that are lost will be retransmitted. The experiment gave parallel results with our expectations. When we increase the percentage of packet loss, some packet are lost as expected, and the timeout happened in broker side. Therefore, lost packets will be retransmitted and file transfer time has increased.
+
+\newpage
+
+\subsection*{Experiment 2}
+
+\begin{figure}[h]
+\centerline{\includegraphics[scale=0.5]{exp2.png}}
+\caption{}
+\label{fig}
+\end{figure}
+
+In the second experiment, we expected that if we increase the percentage of corruption, file transfer time also will increase because packets that are corrupted will be retransmitted. The experiment gave parallel results with our expectations. When we increase the percentage of corruption, our checksum mechanism detected the corrupted packets then the packets were retransmitted.
+\subsection*{Experiment 3}
+
+\begin{figure}[h]
+\centerline{\includegraphics[scale=0.5]{exp3.png}}
+\caption{}
+\label{fig}
+\end{figure}
+
+In the third experiment, we expected that if we increase the reordering, file transfer time also will increase because orders of packets change more frequently and percentage of retransmission will raise. The experiment did not give parallel results with our expectations. When we increase the reordering,  file transfer times are obtained from experiments did not increase as much as we expected. When we read manual page of  tc-netem,  we learned that some of the packets are sent immediately and some of them send with 10 ms delay. This delay doesn't too much affect our execution of scripts because we send packets with 20 ms gaps. 
 
 \section{Workload}
 
